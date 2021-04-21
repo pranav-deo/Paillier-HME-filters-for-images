@@ -44,7 +44,20 @@ def Negation(public, cipher_im):
 
 
 def LPF(public, cipher_im):
-    shape = cipher_im.shape
-    lpf_img = cipher_im.flatten().tolist()
-    lpf_img = [paillier_sub(public, encrypt(public, 255), pixel) for pixel in lpf_img]
-    return np.asarray(lpf_img).reshape(shape)
+    # shape = cipher_im.shape
+    # lpf_img = cipher_im.flatten().tolist()
+    # lpf_img = [paillier_sub(public, encrypt(public, 255), pixel) for pixel in lpf_img]
+    # return np.asarray(lpf_img).reshape(shape)
+    row, column = cipher_im.shape
+    lpf_img = np.zeros(cipher_im.shape)
+    for rr in range(len(row)):
+        for cc in range(len(column)):
+            for ii in [-1, 0, 1]:
+                if rr + ii < 0 or ii + rr >= row:
+                    continue
+                for jj in [-1, 0, 1]:
+                    if cc + jj < 0 or jj + cc >= column:
+                        continue
+                    lpf_img[rr][cc] = merge_m_e(new_paillier_add(unmerge_m_e(lpf_img[rr][cc]), new_paillier_mul(unmerge_m_e(cipher_im[rr + ii][cc + jj]), 1 / 9)))
+            lpf_img[rr][cc] = merge_m_e(new_paillier_mul(unmerge_m_e(lpf_img[rr][cc]), 1 / 9))
+    return lpf_img
