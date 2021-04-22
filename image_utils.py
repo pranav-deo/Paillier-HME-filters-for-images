@@ -11,6 +11,7 @@ def merge_m_e(tup):
         Give one sign byte and 2 bytes for exponent
     """
     if abs(tup[1]) > 99:
+        print(tup)
         assert 564 == 5464
     if tup[1] >= 0:
         return tup[0] * 1000 + tup[1]
@@ -105,8 +106,6 @@ def Dilation(public, cipher_im, kernal_size=3):
         for cc in range(column):
             dil_img[rr][cc] = merge_m_e(encrypt(public, 0))
 
-    # kernal = np.around(np.ones((kernal_size, kernal_size)), decimals=3)
-
     for rr in range(row):
         for cc in range(column):
             for ii in range(kernal_size):
@@ -144,3 +143,15 @@ def Edge(public, cipher_im):
                     Gx[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(Gx[rr][cc]), new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), kernal_x[kernal_size // 2 + ii][kernal_size // 2 + jj])))
                     Gy[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(Gy[rr][cc]), new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), kernal_y[kernal_size // 2 + ii][kernal_size // 2 + jj])))
     return Gx, Gy
+
+
+def Hist_equal(public, H, img_size, private):
+    Hc = np.zeros(H.shape).astype(int)
+    T = np.zeros(H.shape).astype(int)
+    G = len(H)
+    tmp = (G - 1) / (img_size[0] * img_size[1])
+    Hc[0] = H[0]
+    for ii in range(1, G):
+        Hc[ii] = merge_m_e(new_paillier_add(public, unmerge_m_e(Hc[ii - 1]), unmerge_m_e(H[ii])))
+        T[ii] = merge_m_e(new_paillier_mul(public, unmerge_m_e(Hc[ii]), tmp))
+    return T
