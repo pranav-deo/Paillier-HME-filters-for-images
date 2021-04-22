@@ -45,7 +45,7 @@ def decrypt(private, public, cipher):  # decrypt the cipher using public and pri
     plain = (L_n * myu) % n
     plain = ((plain + math.floor(n / 2)) % n) - math.floor(n / 2)
 
-    return plain * 2**cipher[1]
+    return float(plain) * (2.0)**cipher[1]
 
 
 ######################################################################################################################################

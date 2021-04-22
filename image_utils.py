@@ -4,13 +4,24 @@ from crypt_utils import new_paillier_add, new_paillier_mul, new_paillier_sub, de
 
 
 def merge_m_e(tup):
-    """ Merges the mantissa and exponent channel to parse it in single greyscale image"""
-    return tup[0] * 1000 + tup[1]
+    """
+    Merges the mantissa and exponent channel to parse it in single greyscale image
+
+        Give one sign byte and 2 bytes for exponent
+    """
+    if tup[1] >= 0:
+        return tup[0] * 1000 + tup[1]
+    else:
+        return tup[0] * 1000 + 100 + abs(tup[1])
 
 
 def unmerge_m_e(pixel):
     """ Unmerges the mantissa and exponent channel to perform operations on the ciphered image"""
-    return (pixel // 1000, pixel % 1000)
+    val = (pixel // 1000, pixel % 1000)
+    if val[1] > 100:
+        return (val[0], -1 * (val[1] % 100))
+    else:
+        return val
 
 
 def Im_encrypt(public, plain_im):
@@ -64,8 +75,8 @@ def LPF(public, cipher_im, private):
                         continue
                     # print(rr, cc, ii, jj)
                     lpf_img[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(lpf_img[rr][cc]), unmerge_m_e(cipher_im[rr + ii][cc + jj])))
-            print("B", rr, cc, decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])))
-            print("B1", rr, cc, unmerge_m_e(lpf_img[rr][cc]))
-            lpf_img[rr][cc] = merge_m_e(new_paillier_mul(public, unmerge_m_e(lpf_img[rr][cc]), 1 / 8))
-            print("A", rr, cc, decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])))
+            # print("B", rr, cc, decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])))
+            # print("B1", rr, cc, unmerge_m_e(lpf_img[rr][cc]))
+            lpf_img[rr][cc] = merge_m_e(new_paillier_mul(public, unmerge_m_e(lpf_img[rr][cc]), 0.125))
+            # print("A", rr, cc, decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])))
     return lpf_img
