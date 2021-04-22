@@ -16,7 +16,7 @@ def modpow(b, e, m):  # return b^e(mod m)
 def custom_frexp(num):
     man, exp = math.frexp(num)
 
-    while (not math.isclose(man, int(man), rel_tol=1e-4)) or exp > 0:
+    while (not math.isclose(man, int(man), rel_tol=0.1)) or exp > 0:
         man *= 2
         exp -= 1
 
