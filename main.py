@@ -63,15 +63,19 @@ cipher_image = Im_encrypt(public_key, img)
 # ax[1][2].set_title('Edge image')
 
 f, ax = plt.subplots(1, 2)
-d_img = Im_decrypt(private_key, public_key, Dilation(public_key, cipher_image, kernal_size=3))
-d_img = np.clip(d_img, 0, 1)
-real_img_binary = np.clip(img, 0, 1)
-# print(s_img)
 
-ax[0].imshow(real_img_binary, cmap='gray', vmin=0, vmax=1)
+bin_img = Image.open('dil.jpg').convert('L')
+bin_img = np.asarray(bin_img.resize((MAX_IMG_DIM, bin_img.height * MAX_IMG_DIM // bin_img.width)))
+bin_cipher_image = Im_encrypt(public_key, bin_img)
+
+
+d_img = Im_decrypt(private_key, public_key, Dilation(public_key, bin_cipher_image, kernal_size=3))
+d_img = np.clip(d_img, 0, 1)
+
+ax[0].imshow(bin_img, cmap='gray')
 ax[0].set_title('Binary input')
 
-ax[1].imshow(d_img, cmap='gray', vmin=0, vmax=1)
+ax[1].imshow(d_img, cmap='gray')
 ax[1].set_title('Dilated output')
 
 plt.show()
