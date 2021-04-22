@@ -1,6 +1,7 @@
 import numpy as np
 
 from crypt_utils import new_paillier_add, new_paillier_mul, new_paillier_sub, decrypt, encrypt
+from math_utils import gkern
 
 
 def merge_m_e(tup):
@@ -54,29 +55,82 @@ def Negation(public, cipher_im):
     return np.asarray(negated_img).reshape(shape)
 
 
-def LPF(public, cipher_im, private):
-    # shape = cipher_im.shape
-    # lpf_img = cipher_im.flatten().tolist()
-    # lpf_img = [paillier_sub(public, encrypt(public, 255), pixel) for pixel in lpf_img]
-    # return np.asarray(lpf_img).reshape(shape)
+def LPF(public, cipher_im, filter_type='linear', kernal_size=3):
     row, column = cipher_im.shape
     lpf_img = np.zeros(cipher_im.shape).astype(int)
     for rr in range(row):
         for cc in range(column):
             lpf_img[rr][cc] = merge_m_e(encrypt(public, 0))
 
+    if filter_type == 'gaussian':
+        kernal = gkern(kernal_size, nsig=3)
+    else:
+        kernal = np.ones((kernal_size, kernal_size)) / 9
+
     for rr in range(row):
         for cc in range(column):
+            for ii in np.linspace(-kernal_size // 2, kernal_size // 2, kernal_size).tolist():
+                if rr + ii < 0 or ii + rr >= row:
+                    continue
+                for jj in np.linspace(-kernal_size // 2, kernal_size // 2, kernal_size).tolist():
+                    if cc + jj < 0 or jj + cc >= column:
+                        continue
+                    if filter_type == 'linear':
+                        lpf_img[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(lpf_img[rr][cc]), new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), kernal[ii][jj])))
+    return lpf_img
+
+
+def Sharpen(public, cipher_im):
+    row, column = cipher_im.shape
+    shrp_img = np.zeros(cipher_im.shape).astype(int)
+    for rr in range(row):
+        for cc in range(column):
+            shrp_img[rr][cc] = merge_m_e(encrypt(public, 0))
+
+    for rr in range(row):
+        for cc in range(column):
+            shrp_img[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(cipher_im[rr][cc]), unmerge_m_e(shrp_img[rr][cc])))
             for ii in [-1, 0, 1]:
                 if rr + ii < 0 or ii + rr >= row:
                     continue
                 for jj in [-1, 0, 1]:
                     if cc + jj < 0 or jj + cc >= column:
                         continue
-                    # print(rr, cc, ii, jj)
-                    lpf_img[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(lpf_img[rr][cc]), unmerge_m_e(cipher_im[rr + ii][cc + jj])))
-            # print("B", rr, cc, decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])))
-            # print("B1", rr, cc, unmerge_m_e(lpf_img[rr][cc]))
-            lpf_img[rr][cc] = merge_m_e(new_paillier_mul(public, unmerge_m_e(lpf_img[rr][cc]), 0.125))
-            # print("A", rr, cc, decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])))
-    return lpf_img
+                        if ii == 0 and jj == 0:
+                            continue
+                    fraction_sub = new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), 1 / 9)
+                    shrp_img[rr][cc] = merge_m_e(new_paillier_sub(public, unmerge_m_e(shrp_img[rr][cc]), fraction_sub))
+    return shrp_img
+
+
+# def Dilation(public, cipher_im):
+#     """ Assuming input image is binary i.e. it has only 0 and 255 """
+#     row, column = cipher_im.shape
+#     shrp_img = np.zeros(cipher_im.shape).astype(int)
+#     for rr in range(row):
+#         for cc in range(column):
+#             shrp_img[rr][cc] = merge_m_e(encrypt(public, 0))
+
+#     for rr in range(row):
+#         for cc in range(column):
+#             shrp_img[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(cipher_im[rr][cc]), unmerge_m_e(shrp_img[rr][cc])))
+#             for ii in [-1, 0, 1]:
+#                 if rr + ii < 0 or ii + rr >= row:
+#                     continue
+#                 for jj in [-1, 0, 1]:
+#                     if cc + jj < 0 or jj + cc >= column:
+#                         continue
+#                         if ii == 0 and jj == 0:
+#                             continue
+#                     fraction_sub = new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), 1 / 9)
+#                     shrp_img[rr][cc] = merge_m_e(new_paillier_sub(public, unmerge_m_e(shrp_img[rr][cc]), fraction_sub))
+#     return shrp_img
+
+def Edge(public, cipher_im):
+    row, column = cipher_im.shape
+    edge_img = np.zeros(cipher_im.shape).astype(int)
+
+    for rr in range(row):
+        for cc in range(column):
+            edge_img
+    return edge_img
