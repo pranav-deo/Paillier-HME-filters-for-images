@@ -5,12 +5,12 @@ from crypt_utils import new_paillier_add, new_paillier_mul, new_paillier_sub, de
 
 def merge_m_e(tup):
     """ Merges the mantissa and exponent channel to parse it in single greyscale image"""
-    return tup[0] * 100000 + tup[1]
+    return tup[0] * 1000 + tup[1]
 
 
 def unmerge_m_e(pixel):
     """ Unmerges the mantissa and exponent channel to perform operations on the ciphered image"""
-    return (pixel // 100000, pixel % 100000)
+    return (pixel // 1000, pixel % 1000)
 
 
 def Im_encrypt(public, plain_im):
@@ -43,21 +43,29 @@ def Negation(public, cipher_im):
     return np.asarray(negated_img).reshape(shape)
 
 
-def LPF(public, cipher_im):
+def LPF(public, cipher_im, private):
     # shape = cipher_im.shape
     # lpf_img = cipher_im.flatten().tolist()
     # lpf_img = [paillier_sub(public, encrypt(public, 255), pixel) for pixel in lpf_img]
     # return np.asarray(lpf_img).reshape(shape)
     row, column = cipher_im.shape
-    lpf_img = np.zeros(cipher_im.shape)
-    for rr in range(len(row)):
-        for cc in range(len(column)):
+    lpf_img = np.zeros(cipher_im.shape).astype(int)
+    for rr in range(row):
+        for cc in range(column):
+            lpf_img[rr][cc] = merge_m_e(encrypt(public, 0))
+
+    for rr in range(row):
+        for cc in range(column):
             for ii in [-1, 0, 1]:
                 if rr + ii < 0 or ii + rr >= row:
                     continue
                 for jj in [-1, 0, 1]:
                     if cc + jj < 0 or jj + cc >= column:
                         continue
-                    lpf_img[rr][cc] = merge_m_e(new_paillier_add(unmerge_m_e(lpf_img[rr][cc]), new_paillier_mul(unmerge_m_e(cipher_im[rr + ii][cc + jj]), 1 / 9)))
-            lpf_img[rr][cc] = merge_m_e(new_paillier_mul(unmerge_m_e(lpf_img[rr][cc]), 1 / 9))
+                    # print(rr, cc, ii, jj)
+                    lpf_img[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(lpf_img[rr][cc]), unmerge_m_e(cipher_im[rr + ii][cc + jj])))
+            print("B", rr, cc, decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])))
+            print("B1", rr, cc, unmerge_m_e(lpf_img[rr][cc]))
+            lpf_img[rr][cc] = merge_m_e(new_paillier_mul(public, unmerge_m_e(lpf_img[rr][cc]), 1 / 8))
+            print("A", rr, cc, decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])))
     return lpf_img

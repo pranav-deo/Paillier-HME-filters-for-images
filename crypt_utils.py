@@ -40,7 +40,7 @@ def decrypt(private, public, cipher):  # decrypt the cipher using public and pri
     (n, g) = public
     n_sq = n**2
     # print("In decrypt: ", cipher)
-    L_n = modpow(cipher[0], lam, n_sq) - 1
+    L_n = modpow(int(cipher[0]), int(lam), int(n_sq)) - 1
     L_n = L_n // n
     plain = (L_n * myu) % n
     plain = ((plain + math.floor(n / 2)) % n) - math.floor(n / 2)
@@ -67,6 +67,13 @@ def paillier_sub(public, c1, c2):  # cipher of the subtraction of plain text
 def paillier_mul(public, c1, m1):  # cipher of multiplication of 2 plain texts(1 private plain tect and 1 public plain text)
     (n, g) = public
     n_sq = n**2
+    m1 = int(m1)
+    c1 = int(c1)
+    # print('=' * 100)
+    # print(type(public))
+    # print(type(c1), c1)
+    # print(type(m1), m1)
+    # print('=' * 100)
     return modpow(c1, m1, n_sq)
 
 ######################################################################################################################################
@@ -86,7 +93,7 @@ def new_paillier_add(public, c1, c2):
     """ Returns c1 + c2 in cipher space """
     if c1[1] <= c2[1]:
         temp = paillier_mul(public, c2[0], 2**(c2[1] - c1[1]))
-        m3 = paillier_add(public, c1[0], temp)
+        m3 = paillier_add(public, int(c1[0]), temp)
         return (m3, c1[1])
     else:
         temp = paillier_mul(public, c1[0], 2**(c1[1] - c2[1]))
