@@ -131,9 +131,26 @@ def Sharpen(public, cipher_im, k):
 
 def Edge(public, cipher_im):
     row, column = cipher_im.shape
-    edge_img = np.zeros(cipher_im.shape).astype(int)
+    Gx = np.zeros(cipher_im.shape).astype(int)
+    Gy = np.zeros(cipher_im.shape).astype(int)
+
+    kernal_size = 3
+    kernal_x = np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]])
+    kernal_y = kernal_x.T
 
     for rr in range(row):
         for cc in range(column):
-            edge_img
-    return edge_img
+            Gx[rr][cc] = merge_m_e(encrypt(public, 0))
+            Gy[rr][cc] = merge_m_e(encrypt(public, 0))
+
+    for rr in range(row):
+        for cc in range(column):
+            for ii in np.linspace(-kernal_size // 2 + 1, kernal_size // 2, kernal_size).astype(int).tolist():
+                if rr + ii < 0 or ii + rr >= row:
+                    continue
+                for jj in np.linspace(-kernal_size // 2 + 1, kernal_size // 2, kernal_size).astype(int).tolist():
+                    if cc + jj < 0 or jj + cc >= column:
+                        continue
+                    Gx[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(Gx[rr][cc]), new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), kernal_x[kernal_size // 2 + ii][kernal_size // 2 + jj])))
+                    Gy[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(Gy[rr][cc]), new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), kernal_y[kernal_size // 2 + ii][kernal_size // 2 + jj])))
+    return Gx, Gy
