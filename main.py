@@ -8,14 +8,14 @@ import time
 
 from crypt_utils import generate_keypair
 from crypt_utils import encrypt, decrypt, new_paillier_mul
-from image_utils import Im_encrypt, Im_decrypt, Brighten, Negation, LPF, Sharpen, Edge
+from image_utils import Im_encrypt, Im_decrypt, Brighten, Negation, LPF, Sharpen, Edge, Dilation
 
 MAX_IMG_DIM = 400
 
 private_key, public_key = generate_keypair(num_digit=4)
 
 # f, ax = plt.subplots(2, 3)
-f, ax = plt.subplots(1, 1)
+# f, ax = plt.subplots(1, 1)
 
 img = Image.open('lena.jpg').convert('L')
 
@@ -55,14 +55,23 @@ cipher_image = Im_encrypt(public_key, img)
 # ax[1][2].imshow(b_img, cmap='gray', vmin=0, vmax=255)
 # ax[1][2].set_title('Brightened image')
 
-Gx = Im_decrypt(private_key, public_key, Edge(public_key, cipher_image)[0])
-Gy = Im_decrypt(private_key, public_key, Edge(public_key, cipher_image)[1])
-G = np.sqrt(Gx**2 + Gy**2)
 
+# Gx = Im_decrypt(private_key, public_key, Edge(public_key, cipher_image)[0])
+# Gy = Im_decrypt(private_key, public_key, Edge(public_key, cipher_image)[1])
+# G = np.sqrt(Gx**2 + Gy**2)
 # ax[1][2].imshow(G, cmap='gray', vmin=0, vmax=255)
 # ax[1][2].set_title('Edge image')
-ax.imshow(G, cmap='gray', vmin=0, vmax=255)
-ax.set_title('Edge image')
 
+f, ax = plt.subplots(1, 2)
+d_img = Im_decrypt(private_key, public_key, Dilation(public_key, cipher_image, kernal_size=3))
+d_img = np.clip(d_img, 0, 1)
+real_img_binary = np.clip(img, 0, 1)
 # print(s_img)
+
+ax[0].imshow(real_img_binary, cmap='gray', vmin=0, vmax=1)
+ax[0].set_title('Binary input')
+
+ax[1].imshow(d_img, cmap='gray', vmin=0, vmax=1)
+ax[1].set_title('Dilated output')
+
 plt.show()

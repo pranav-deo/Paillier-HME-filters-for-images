@@ -69,7 +69,6 @@ def LPF(public, cipher_im, filter_type='linear', kernal_size=3):
     else:
         kernal = np.around(np.ones((kernal_size, kernal_size)) / (kernal_size * kernal_size), decimals=3)
 
-    # print("kernal", kernal)
     for rr in range(row):
         for cc in range(column):
             for ii in np.linspace(-kernal_size // 2 + 1, kernal_size // 2, kernal_size).astype(int).tolist():
@@ -78,14 +77,7 @@ def LPF(public, cipher_im, filter_type='linear', kernal_size=3):
                 for jj in np.linspace(-kernal_size // 2 + 1, kernal_size // 2, kernal_size).astype(int).tolist():
                     if cc + jj < 0 or jj + cc >= column:
                         continue
-                    # temp = lpf_img[rr][cc]
                     lpf_img[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(lpf_img[rr][cc]), new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), kernal[kernal_size // 2 + ii][kernal_size // 2 + jj])))
-                    # if decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])) < 0:
-                    #     tmp = decrypt(private, public, new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), 1 / 9))
-                    # print("prev pixel", decrypt(private, public, unmerge_m_e(temp)))
-                    # print("current multi", tmp)
-                    # print("Addition", decrypt(private, public, unmerge_m_e(lpf_img[rr][cc])))
-                    # assert 1 == 0
     return lpf_img
 
 
@@ -106,28 +98,26 @@ def Sharpen(public, cipher_im, k):
     return shrp_img
 
 
-# def Dilation(public, cipher_im):
-#     """ Assuming input image is binary i.e. it has only 0 and 255 """
-#     row, column = cipher_im.shape
-#     shrp_img = np.zeros(cipher_im.shape).astype(int)
-#     for rr in range(row):
-#         for cc in range(column):
-#             shrp_img[rr][cc] = merge_m_e(encrypt(public, 0))
+def Dilation(public, cipher_im, kernal_size=3):
+    row, column = cipher_im.shape
+    dil_img = np.zeros(cipher_im.shape).astype(int)
+    for rr in range(row):
+        for cc in range(column):
+            dil_img[rr][cc] = merge_m_e(encrypt(public, 0))
 
-#     for rr in range(row):
-#         for cc in range(column):
-#             shrp_img[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(cipher_im[rr][cc]), unmerge_m_e(shrp_img[rr][cc])))
-#             for ii in [-1, 0, 1]:
-#                 if rr + ii < 0 or ii + rr >= row:
-#                     continue
-#                 for jj in [-1, 0, 1]:
-#                     if cc + jj < 0 or jj + cc >= column:
-#                         continue
-#                         if ii == 0 and jj == 0:
-#                             continue
-#                     fraction_sub = new_paillier_mul(public, unmerge_m_e(cipher_im[rr + ii][cc + jj]), 1 / 9)
-#                     shrp_img[rr][cc] = merge_m_e(new_paillier_sub(public, unmerge_m_e(shrp_img[rr][cc]), fraction_sub))
-#     return shrp_img
+    # kernal = np.around(np.ones((kernal_size, kernal_size)), decimals=3)
+
+    for rr in range(row):
+        for cc in range(column):
+            for ii in range(kernal_size):
+                if rr + ii < 0 or ii + rr >= row:
+                    continue
+                for jj in range(kernal_size):
+                    if cc + jj < 0 or jj + cc >= column:
+                        continue
+                    dil_img[rr][cc] = merge_m_e(new_paillier_add(public, unmerge_m_e(dil_img[rr][cc]), unmerge_m_e(cipher_im[rr + ii][cc + jj])))
+    return dil_img
+
 
 def Edge(public, cipher_im):
     row, column = cipher_im.shape
