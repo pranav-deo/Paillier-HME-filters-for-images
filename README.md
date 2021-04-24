@@ -1,5 +1,11 @@
 # Paillier-HME-filters-for-images
-Course project for CS-416 (M) at IIT Bombay
+Course project for CS-416 (M) at IIT Bombay. 
+This package performs Paillier Homomorphic encryption [read more here](https://en.wikipedia.org/wiki/Paillier_cryptosystem) on images. Complete python implementation of [this](https://ieeexplore.ieee.org/document/7860550) paper from scratch. This code contains ecryption and decryption functions to be applied on images. It also contains basic image filters which can be applied to ciphered images to get desired changes in decrypted images.
+Examples: 
+![Sample filter operations](./Figure_1.png)
+![Sample filter operations](./Figure_2.png)
+
+Here, all the filters were applied on ciphered images and then decrypted.
 
 ## Setup:
 Install all packages from requirements.txt as `pip3 install -r requirements.txt`
