@@ -140,9 +140,10 @@ def shades_of_lpf():
     img = Image.open('lena.jpg').convert('L')
     img = np.asarray(img.resize((MAX_IMG_DIM, img.height * MAX_IMG_DIM // img.width)))
     cipher_image = Im_encrypt(public_key, img)
+
     for ii, ks in enumerate([3, 5, 7]):
         for jj, fil in enumerate(['linear', 'gaussian']):
-            ax[jj][ii].imshow(Im_decrypt(private_key, public_key, LPF(public_key, cipher_image, filter_type=fil, kernal_size=ks)))
+            ax[jj][ii].imshow(Im_decrypt(private_key, public_key, LPF(public_key, cipher_image, filter_type=fil, kernal_size=ks)), cmap='gray', vmin=0, vmax=255)
             ax[jj][ii].set_title(fil + " filter with " + str(ks) + " kernal size")
 
     plt.savefig('experiments/lpf_images.png')
