@@ -2,4 +2,5 @@ libnum
 sympy
 numpy
 matplotlib
+seaborn
 scikit-learn

@@ -96,7 +96,7 @@ ax[2][1].set_title('Edge image')
 im_new = np.copy(img)
 histogram_array = np.bincount(img.flatten(), minlength=256)
 hist_cipher = Im_encrypt(public_key, histogram_array)
-pixel_transform = Im_decrypt(private_key, public_key, Hist_equal(public_key, hist_cipher, im_new.shape, private_key))
+pixel_transform = Im_decrypt(private_key, public_key, Hist_equal(public_key, hist_cipher, im_new.shape))
 
 row, column = im_new.shape
 for rr in range(row):

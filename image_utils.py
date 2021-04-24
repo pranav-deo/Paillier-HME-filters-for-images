@@ -145,7 +145,7 @@ def Edge(public, cipher_im):
     return Gx, Gy
 
 
-def Hist_equal(public, H, img_size, private):
+def Hist_equal(public, H, img_size):
     Hc = np.zeros(H.shape).astype(int)
     T = np.zeros(H.shape).astype(int)
     G = len(H)
