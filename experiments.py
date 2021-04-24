@@ -144,11 +144,71 @@ def shades_of_lpf():
     for ii, ks in enumerate([3, 5, 7]):
         for jj, fil in enumerate(['linear', 'gaussian']):
             ax[jj][ii].imshow(Im_decrypt(private_key, public_key, LPF(public_key, cipher_image, filter_type=fil, kernal_size=ks)), cmap='gray', vmin=0, vmax=255)
-            ax[jj][ii].set_title(fil + " filter with " + str(ks) + " kernal size")
+            ax[jj][ii].set_title(fil + " filter with \n" + str(ks) + " kernal size")
 
     plt.savefig('experiments/lpf_images.png')
     plt.show()
 
 
+def shades_of_dilation():
+    MAX_IMG_DIM = 400
+
+    private_key, public_key = generate_keypair(num_digit=4)
+
+    f, ax = plt.subplots(1, 4)
+    img = Image.open('dil.jpg').convert('L')
+    img = np.asarray(img.resize((MAX_IMG_DIM, img.height * MAX_IMG_DIM // img.width)))
+    cipher_image = Im_encrypt(public_key, img)
+
+    ax[0].imshow(img, cmap='gray')
+    ax[0].set_title("Original image")
+    for ii, ks in enumerate([5, 10, 20]):
+        ax[ii + 1].imshow(np.clip(Im_decrypt(private_key, public_key, Dilation(public_key, cipher_image, kernal_size=ks)), 0, 1), cmap='gray', vmin=0, vmax=1)
+        ax[ii + 1].set_title("Kernal size = " + str(ks))
+
+    plt.savefig('experiments/dil_images.png')
+    plt.show()
+
+
+def shades_of_brighten():
+    MAX_IMG_DIM = 400
+
+    private_key, public_key = generate_keypair(num_digit=4)
+
+    f, ax = plt.subplots(1, 4)
+    img = Image.open('lena.jpg').convert('L')
+    img = np.asarray(img.resize((MAX_IMG_DIM, img.height * MAX_IMG_DIM // img.width)))
+    cipher_image = Im_encrypt(public_key, img)
+
+    ax[0].imshow(img, cmap='gray')
+    ax[0].set_title("Original image")
+    for ii, ks in enumerate([20, 50, 100]):
+        ax[ii + 1].imshow(Im_decrypt(private_key, public_key, Brighten(public_key, cipher_image, ks)), cmap='gray', vmin=0, vmax=255)
+        ax[ii + 1].set_title("Brightness added: " + str(ks))
+
+    plt.savefig('experiments/bri_images.png')
+    plt.show()
+
+
+def shades_of_sharpen():
+    MAX_IMG_DIM = 400
+
+    private_key, public_key = generate_keypair(num_digit=4)
+
+    f, ax = plt.subplots(1, 4)
+    img = Image.open('lena.jpg').convert('L')
+    img = np.asarray(img.resize((MAX_IMG_DIM, img.height * MAX_IMG_DIM // img.width)))
+    cipher_image = Im_encrypt(public_key, img)
+
+    ax[0].imshow(img, cmap='gray')
+    ax[0].set_title("Original image")
+    for ii, ks in enumerate([3, 10, 20]):
+        ax[ii + 1].imshow(Im_decrypt(private_key, public_key, Sharpen(public_key, cipher_image, ks)), cmap='gray', vmin=0, vmax=255)
+        ax[ii + 1].set_title("Sharpness added: " + str(ks))
+
+    plt.savefig('experiments/shrp_images.png')
+    plt.show()
+
+
 if __name__ == '__main__':
-    shades_of_lpf()
+    shades_of_sharpen()
